@@ -25,6 +25,8 @@ jobs:
             # Download & install hadolint
             echo "== Downloading hadolint =="
             wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64 &&\
+            echo "== Find hadolint download =="
+            sudo find ~/ -iname hadolint
             chmod +x /bin/hadolint
 
       - save_cache:
