@@ -53,10 +53,8 @@ jobs:
       - run:
           name: "Build docker image from repo"
           command: |
-            echo $DOCKERHUB_USERNAME
-            echo $DOCKERHUB_PASSWORD
-            docker login --username="$DOCKERHUB_USERNAME" -password="$DOCKERHUB_PASSWORD"
-            echo docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
+            echo $ docker login --username="$DOCKERHUB_USERNAME" -password="$DOCKERHUB_PASSWORD"
+            echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
             echo "== Sanity check to find known docker image =="
             docker search proj04-app
 
