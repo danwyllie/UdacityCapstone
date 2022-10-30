@@ -1,6 +1,6 @@
 version: 2.1
 jobs:
-  build:
+  build-lint:
     docker:
       # Use the same Docker base as the project
       - image: python:3.7.3-stretch
@@ -22,12 +22,12 @@ jobs:
             python3 -m venv venv
             . venv/bin/activate
             make install
-            # Download & install hadolint
+            echo "== Download hadolint =="
             echo "== Downloading hadolint =="
             wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64
             chmod +x /bin/hadolint
-            echo "== Find hadolint download =="
-            find ~/ -iname hadolint
+            echo "== Checking for hadolint =="
+            hadolint -v
 
       - save_cache:
           paths:
@@ -39,6 +39,27 @@ jobs:
           name: "Run lint"
           command: |
             . venv/bin/activate
-            echo "== Checking for hadolint =="
-            hadolint -v
             make lint
+  
+  docker-build-upload:
+    docker:
+      - image: cimg/base:2021.04
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
+
+    steps:
+      - checkout
+      - run:
+          name: "Build docker image from repo"
+          command: |
+            docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
+            echo "== Sanity check to find known docker image =="
+            docker search proj04-app
+
+workflows:
+  default:
+    jobs:
+      - build-lint
+      - docker-build-upload:
+          requires: [build-lint]
