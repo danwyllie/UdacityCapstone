@@ -9,7 +9,7 @@ test:
 	python -m pytest -vv app.py
 
 lint:
-	~/.UdacityCapstone/bin/hadolint Dockerfile
+	hadolint Dockerfile
 	pylint --disable=R,C app
 
 all: install test lint
