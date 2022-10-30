@@ -55,7 +55,7 @@ jobs:
           command: |
             echo $DOCKERHUB_USERNAME
             echo $DOCKERHUB_PASSWORD
-            docker login
+            docker login --username="$DOCKERHUB_USERNAME" -password="$DOCKERHUB_PASSWORD"
             echo docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
             echo "== Sanity check to find known docker image =="
             docker search proj04-app
