@@ -40,5 +40,5 @@ jobs:
           command: |
             . venv/bin/activate
             echo "== Checking for hadolint =="
-            hadolint --help
+            hadolint -v
             make lint
