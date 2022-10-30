@@ -24,10 +24,10 @@ jobs:
             make install
             # Download & install hadolint
             echo "== Downloading hadolint =="
-            wget -O ./bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64 &&\
+            wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64
+            chmod +x /bin/hadolint
             echo "== Find hadolint download =="
-            sudo find ~/ -iname hadolint
-            chmod +x ./bin/hadolint
+            find ~/ -iname hadolint
 
       - save_cache:
           paths:
