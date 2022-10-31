@@ -43,20 +43,15 @@ jobs:
   
   docker-build-upload:
     docker:
-      - image: cimg/base:2021.04
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASSWORD
-
+      - image: cimg/base:stable
     steps:
       - checkout
+      - setup_remote_docker
       - run:
           name: "Docker Build-Login-Upload"
           command: |
             echo "== Build docker image locally =="
             docker build --tag=udacitycapstone .
-            echo "== Sanity check - is docker image listed? =="
-            docker image ls --filter=reference='udacitycapstone'
             echo "== Login to docker with envirvonment variables =="
             echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
             echo "== Tag docker image for upload =="
