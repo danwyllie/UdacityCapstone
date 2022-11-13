@@ -384,7 +384,7 @@ jobs:
             elif [[ "$CLEANUPREQUESTED" == "no" ]]
             then
              echo "== No cleanup requested - leaving all resources running =="
-             echo "== LEAVING RESOURCE RUNNING WILL COST $$$ !! =="
+             echo "== LEAVING RESOURCE RUNNING WILL COST $ !! =="
             else
              echo "== Problem validating cluster cleanup =="
              echo "== Verify value of clustercleanup.txt =="
@@ -393,17 +393,16 @@ jobs:
 workflows:
   default:
     jobs:
-#      - build-lint
-#      - docker-build-test-upload:
-#          requires: [build-lint]
-#      - eks-setup:
-#          requires: [docker-build-test-upload]
-#      - deploy-app:
-#          requires: [eks-setup]
-#      - smoke-test:
-#          requires: [deploy-app]
-#      - clean-up-app:
-#          requires: [smoke-test]
-#      - eks-cleanup:
-#          requires: [clean-up-app]
-      - eks-cleanup
+      - build-lint
+      - docker-build-test-upload:
+          requires: [build-lint]
+      - eks-setup:
+          requires: [docker-build-test-upload]
+      - deploy-app:
+          requires: [eks-setup]
+      - smoke-test:
+          requires: [deploy-app]
+      - clean-up-app:
+          requires: [smoke-test]
+      - eks-cleanup:
+          requires: [clean-up-app]
