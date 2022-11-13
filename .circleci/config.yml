@@ -381,7 +381,6 @@ workflows:
           requires: [build-lint]
       - eks-setup:
           requires: [docker-build-test-upload]
-      - eks-setup
       - deploy-app:
           requires: [eks-setup]
       - smoke-test:
