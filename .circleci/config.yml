@@ -6,7 +6,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: "Create, make and lint code"
+          name: "Setup .env and run make"
           command: |
             python3 -m venv venv
             . venv/bin/activate
@@ -20,19 +20,20 @@ jobs:
             cat .env
             echo "== Run make =="
             make install
-            echo "== Download hadolint =="
-            sudo wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64 &&\
-            sudo chmod +x /bin/hadolint
-            echo "== Checking for hadolint =="
-            hadolint -v
       - save_cache:
           paths:
             - ./venv
           key: v1-dependencies-{{ checksum "requirements.txt" }}
       - run:
-          name: "Run lint"
+          name: "Download and run lint"
           command: |
             . venv/bin/activate
+            echo "== Download hadolint =="
+            sudo wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64 &&\
+            sudo chmod +x /bin/hadolint
+            echo "== Checking for hadolint =="
+            hadolint -v
+            echo "== Running lint =="
             make lint
 
   docker-build-test-upload:
