@@ -188,22 +188,20 @@ jobs:
             aws eks update-kubeconfig --name udacitycapstone
             echo "== Checking last deployment =="
             export LASTDEPLOY=$(curl -s -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/lastdeployment)
-            if [[ "$LASTDEPLOY" == green ]]
+            echo "Last deployment was:" ${LASTDEPLOY}
+            export EXISTINGBLUE=($(kubectl get deployments | grep udacitycapstone-blue | awk '{print $1}'))
+            export EXISTINGGREEN=($(kubectl get deployments | grep udacitycapstone-green | awk '{print $1}'))
+            if [[ "$LASTDEPLOY" == green ]] && [[ -z "$EXISTINGBLUE" ]]
             then
-             echo "== Last deployment : GREEN =="
-             echo "== Deploying new as BLUE =="
+             echo "== Deploying new app as BLUE =="
              kubectl apply -f eksyml/blue-deploy.yml
-             echo "== Waiting 60 secs =="
              sleep 60
-             echo "== Sanity checking deployments / pods / nodes =="
+             kubectl apply -f eksyml/blue-service.yml
+             sleep 60
+             echo "== Sanity checking status =="
              kubectl get deployments
              kubectl get pods
              kubectl get nodes
-             echo "== Deploying service to BLUE =="
-             kubectl apply -f eksyml/blue-service.yml
-             echo "== Waiting 60 secs =="
-             sleep 60
-             echo "== Sanity checking services =="
              kubectl get services
              echo "== Store new deployment =="
              curl -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/newdeployment -d 'blue'
@@ -212,21 +210,17 @@ jobs:
              curl -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/newawsurl -d $AWSURL
              echo "== Show new BLUE app URL =="
              echo "http://"${AWSURL}
-            else
-             echo "== Last deployment : BLUE =="
-             echo "== Deploying new as GREEN =="
+            elif [[ "$LASTDEPLOY" == blue ]] && [[ -z "$EXISTINGGREEN" ]]
+            then
+             echo "== Deploying new app as GREEN =="
              kubectl apply -f eksyml/green-deploy.yml
-             echo "== Waiting 60 secs =="
              sleep 60
-             echo "== Sanity checking deployments / pods / nodes =="
+             kubectl apply -f eksyml/green-service.yml
+             sleep 60
+             echo "== Sanity checking status =="
              kubectl get deployments
              kubectl get pods
              kubectl get nodes
-             echo "== Deploying service to GREEN =="
-             kubectl apply -f eksyml/green-service.yml
-             echo "== Waiting 60 secs =="
-             sleep 60
-             echo "== Sanity checking services =="
              kubectl get services
              echo "== Store new deployment =="
              curl -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/newdeployment -d 'green'
@@ -234,7 +228,9 @@ jobs:
              export AWSURL=($(kubectl get services | grep udacitycapstone-green | awk '{print $4}'))
              curl -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/newawsurl -d $AWSURL
              echo "== Show new GREEN app URL =="
-             echo "http://"${AWSURL}             
+             echo "http://"${AWSURL}
+            else
+             echo "== Cannot validate last deployment - need to investigate =="
             fi
 
   smoke-test:
@@ -399,6 +395,9 @@ jobs:
 #             else
 #              echo "== No old BLUE found to cleanup =="
 #            fi
+
+# If grep og clustercleanup.txt = yes
+# eksctl delete cluster -f eksyml/cluster.yml 
 
 workflows:
   default:
