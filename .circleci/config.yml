@@ -245,8 +245,8 @@ jobs:
           name: "Smoke test new app"
           no_output_timeout: 30m
           command: |
-            echo "== Waiting 5 mins before smoke test =="
-            sleep 300
+            echo "== Waiting 3 mins before smoke test =="
+            sleep 180
             echo "== Grab latest app AWS LB URL =="
             export AWSURL=$(curl -s -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/newawsurl)
             echo "Testing: " ${AWSURL}
@@ -341,8 +341,52 @@ jobs:
             kubectl get pods
             kubectl get nodes
 
-# If grep og clustercleanup.txt = yes
-# eksctl delete cluster -f eksyml/cluster.yml 
+  eks-cleanup:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: "Install tar, gzip & wget packages"
+          command: |
+            yum install -y tar gzip wget
+      - run:
+          name: "Download eksctl"
+          command: |
+            echo "== Check version and download if missing =="
+            export EKSCTLCHECK=$(eksctl version)
+            if [ -z "$EKSCTLCHECK" ]
+            then
+              echo "== eksctl not found, downloading =="
+              wget https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz
+              echo "== create temp folder =="
+              mkdir eksctl
+              echo "== extract the download =="
+              tar -xf eksctl_Linux_amd64.tar.gz -C ./eksctl
+              echo "== move eksctl to bin =="
+              mv ./eksctl/eksctl /usr/local/bin
+              echo "== check version =="
+              eksctl version
+            else
+              echo "== eksctl found =="
+              eksctl version
+            fi
+      - run:
+          name: "Check for clustercleanup request"
+          command: |
+            export CLEANUPREQUESTED=$(cat clustercleanup.txt)
+            echo "Value found:" ${CLEANUPREQUESTED}
+            if [[ "$CLEANUPREQUESTED" == yes ]]
+            then
+             echo "== EKS Cluster cleanup requested =="
+             echo "== Deleting cluster and all resources =="
+             eksctl delete cluster -f eksyml/cluster.yml 
+            elif [[ "$CLEANUPREQUESTED" == no ]]
+             echo "== No cleanup requested - leaving all resources running =="
+            else
+             echo "== Problem validating cluster cleanup =="
+             echo "== Verify value of clustercleanup.txt =="
+            fi
 
 workflows:
   default:
@@ -358,5 +402,5 @@ workflows:
           requires: [deploy-app]
       - clean-up-app:
           requires: [smoke-test]
-#      - eks-cleanup:
-#          requires: [clean-up-app]
+      - eks-cleanup:
+          requires: [clean-up-app]
