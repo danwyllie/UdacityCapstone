@@ -245,7 +245,10 @@ jobs:
             yum install -y tar gzip wget
       - run:
           name: "Smoke test new app"
+          no_output_timeout: 30m
           command: |
+            echo "== Waiting 5 mins before smoke test =="
+            sleep 300
             echo "== Grab latest app AWS LB URL =="
             export AWSURL=$(curl -s -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/newawsurl)
             echo "Testing: " ${AWSURL}
