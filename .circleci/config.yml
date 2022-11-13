@@ -376,13 +376,15 @@ jobs:
           command: |
             export CLEANUPREQUESTED=$(cat clustercleanup.txt)
             echo "Value found:" ${CLEANUPREQUESTED}
-            if [[ "$CLEANUPREQUESTED" == yes ]]
+            if [[ "$CLEANUPREQUESTED" == "yes" ]]
             then
              echo "== EKS Cluster cleanup requested =="
              echo "== Deleting cluster and all resources =="
              eksctl delete cluster -f eksyml/cluster.yml 
-            elif [[ "$CLEANUPREQUESTED" == no ]]
+            elif [[ "$CLEANUPREQUESTED" == "no" ]]
+            then
              echo "== No cleanup requested - leaving all resources running =="
+             echo "== LEAVING RESOURCE RUNNING WILL COST $$$ !! =="
             else
              echo "== Problem validating cluster cleanup =="
              echo "== Verify value of clustercleanup.txt =="
@@ -391,16 +393,17 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-lint
-      - docker-build-test-upload:
-          requires: [build-lint]
-      - eks-setup:
-          requires: [docker-build-test-upload]
-      - deploy-app:
-          requires: [eks-setup]
-      - smoke-test:
-          requires: [deploy-app]
-      - clean-up-app:
-          requires: [smoke-test]
-      - eks-cleanup:
-          requires: [clean-up-app]
+#      - build-lint
+#      - docker-build-test-upload:
+#          requires: [build-lint]
+#      - eks-setup:
+#          requires: [docker-build-test-upload]
+#      - deploy-app:
+#          requires: [eks-setup]
+#      - smoke-test:
+#          requires: [deploy-app]
+#      - clean-up-app:
+#          requires: [smoke-test]
+#      - eks-cleanup:
+#          requires: [clean-up-app]
+      - eks-cleanup
