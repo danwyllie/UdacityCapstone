@@ -189,7 +189,6 @@ jobs:
             aws eks update-kubeconfig --name udacitycapstone
             echo "== Checking current deployment =="
             export CURRENTDEPLOY=$(curl -s -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/currentdeployment)
-#            export LASTDEPLOY=$(curl -s -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/lastdeployment)
             echo "Current deployment is:" ${CURRENTDEPLOY}
             export EXISTINGBLUE=($(kubectl get deployments | grep udacitycapstone-blue | awk '{print $1}'))
             export EXISTINGGREEN=($(kubectl get deployments | grep udacitycapstone-green | awk '{print $1}'))
