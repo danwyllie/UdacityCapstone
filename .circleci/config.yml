@@ -187,12 +187,13 @@ jobs:
           command: |
             echo "== Update kubeconfig =="
             aws eks update-kubeconfig --name udacitycapstone
-            echo "== Checking last deployment =="
-            export LASTDEPLOY=$(curl -s -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/lastdeployment)
-            echo "Last deployment was:" ${LASTDEPLOY}
+            echo "== Checking current deployment =="
+            export CURRENTDEPLOY=$(curl -s -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/currentdeployment)
+#            export LASTDEPLOY=$(curl -s -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/lastdeployment)
+            echo "Current deployment is:" ${CURRENTDEPLOY}
             export EXISTINGBLUE=($(kubectl get deployments | grep udacitycapstone-blue | awk '{print $1}'))
             export EXISTINGGREEN=($(kubectl get deployments | grep udacitycapstone-green | awk '{print $1}'))
-            if [[ "$LASTDEPLOY" == green ]] && [[ -z "$EXISTINGBLUE" ]]
+            if [[ "$CURRENTDEPLOY" == green ]] && [[ -z "$EXISTINGBLUE" ]]
             then
              echo "== Deploying new app as BLUE =="
              kubectl apply -f eksyml/blue-deploy.yml
@@ -205,13 +206,13 @@ jobs:
              kubectl get nodes
              kubectl get services
              echo "== Store new deployment =="
-             curl -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/newdeployment -d 'blue'
+             curl -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/currentdeployment -d 'blue'
              echo "== Store new LB URL for app =="
              export AWSURL=($(kubectl get services | grep udacitycapstone-blue | awk '{print $4}'))
              curl -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/newawsurl -d $AWSURL
              echo "== Show new BLUE app URL =="
              echo "http://"${AWSURL}
-            elif [[ "$LASTDEPLOY" == blue ]] && [[ -z "$EXISTINGGREEN" ]]
+            elif [[ "$CURRENTDEPLOY" == blue ]] && [[ -z "$EXISTINGGREEN" ]]
             then
              echo "== Deploying new app as GREEN =="
              kubectl apply -f eksyml/green-deploy.yml
@@ -224,7 +225,7 @@ jobs:
              kubectl get nodes
              kubectl get services
              echo "== Store new deployment =="
-             curl -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/newdeployment -d 'green'
+             curl -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/currentdeployment -d 'green'
              echo "== Store new LB URL for app =="
              export AWSURL=($(kubectl get services | grep udacitycapstone-green | awk '{print $4}'))
              curl -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/newawsurl -d $AWSURL
@@ -256,19 +257,6 @@ jobs:
             if [[ "$AWSAPPTEST" == *Capstone* ]]
             then
              echo "== App test successful =="
-             export LASTDEPLOY=$(curl -s -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/lastdeployment)
-             echo "== Will proceed to remove old app instance =="
-             echo "Old deployment to remove is:" ${LASTDEPLOY}
-             echo "== Store new deployment =="
-             if [[ "$LASTDEPLOY" == green ]]
-             then
-              echo "New deployment is blue"
-              curl -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/newdeployment -d 'blue'
-             elif [[ "$LASTDEPLOY" == blue ]]
-             then
-              echo "New deployment is green"
-              curl -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/newdeployment -d 'green'
-             fi
             else
              echo "== App failure - please investigate =="
             fi
@@ -326,7 +314,7 @@ jobs:
             echo "== Update kubeconfig =="
             aws eks update-kubeconfig --name udacitycapstone
             echo "== Grabbing latest deployment =="
-            export NEWDEPLOY=$(curl -s -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/newdeployment)
+            export NEWDEPLOY=$(curl -s -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/currentdeployment)
             echo "New deployment was:" ${NEWDEPLOY}
             echo
             export OLDBLUE=($(kubectl get deployments | grep udacitycapstone-blue | awk '{print $1}'))
@@ -355,50 +343,6 @@ jobs:
             kubectl get services
             kubectl get pods
             kubectl get nodes
-#            if [[ "$NEWDEPLOY" == green ]]
-#            then
-#             echo "======================================"
-#             echo "== Checking for old blue deployment =="
-#             export OLDBLUE=($(kubectl get deployments | grep udacitycapstone-blue | awk '{print $1}'))
-#             echo "Blue found as:" ${OLDBLUE}
-#             if [[ "$NEWDEPLOY" == green ]] && [[ -n "$OLDBLUE" ]]; then
-#              echo "== Cleaning up old BLUE deployment =="
-#              echo "== 1. Deleting old blue service... =="
-#              kubectl delete -f eksyml/blue-service.yml
-#              sleep 60
-#              echo "== 2. Deleting old blue deployment =="
-#              kubectl delete -f eksyml/blue-deploy.yml
-#              sleep 60
-#              echo "== Sanity checking current status =="
-#              kubectl get deployments
-#              kubectl get pods
-#              kubectl get nodes
-#              kubectl get services
-#             else
-#              echo "== No old BLUE found to cleanup =="
-#             fi
-#            elif [[ "$NEWDEPLOY" == blue ]]
-#            then
-#             echo "======================================"
-#             echo "== Checking for old green deployment =="
-#             export OLDGREEN=($(kubectl get deployments | grep udacitycapstone-green | awk '{print $1}'))
-#             echo "Green found as:" ${OLDGREEN}
-#             if [[ "$NEWDEPLOY" == green ]] && [[ -n "$OLDGREEN" ]]; then
-#              echo "== Cleaning up old GREEN deployment =="
-#              echo "== 1. Deleting old green service... =="
-#              kubectl delete -f eksyml/green-service.yml
-#              sleep 60
-#              echo "== 2. Deleting old green deployment =="
-#              kubectl delete -f eksyml/green-deploy.yml
-#              sleep 60
-#              echo "== Sanity checking current status =="
-#              kubectl get deployments
-#              kubectl get pods
-#              kubectl get nodes
-#              kubectl get services
-#             else
-#              echo "== No old BLUE found to cleanup =="
-#            fi
 
 # If grep og clustercleanup.txt = yes
 # eksctl delete cluster -f eksyml/cluster.yml 
