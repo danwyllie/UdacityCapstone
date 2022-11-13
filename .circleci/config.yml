@@ -188,11 +188,9 @@ jobs:
             echo "== Update kubeconfig =="
             aws eks update-kubeconfig --name udacitycapstone
             echo "== Checking current deployment =="
-            export CURRENTDEPLOY=$(curl -s -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/currentdeployment)
-            echo "Current deployment is:" ${CURRENTDEPLOY}
             export EXISTINGBLUE=($(kubectl get deployments | grep udacitycapstone-blue | awk '{print $1}'))
             export EXISTINGGREEN=($(kubectl get deployments | grep udacitycapstone-green | awk '{print $1}'))
-            if [[ "$CURRENTDEPLOY" == green ]] && [[ -z "$EXISTINGBLUE" ]]
+            if [[ -n "$EXISTINGGREEN" ]] && [[ -z "$EXISTINGBLUE" ]]
             then
              echo "== Deploying new app as BLUE =="
              kubectl apply -f eksyml/blue-deploy.yml
@@ -211,7 +209,7 @@ jobs:
              curl -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/newawsurl -d $AWSURL
              echo "== Show new BLUE app URL =="
              echo "http://"${AWSURL}
-            elif [[ "$CURRENTDEPLOY" == blue ]] && [[ -z "$EXISTINGGREEN" ]]
+            elif [[ -n "$EXISTINGBLUE" ]] && [[ -z "$EXISTINGGREEN" ]]
             then
              echo "== Deploying new app as GREEN =="
              kubectl apply -f eksyml/green-deploy.yml
