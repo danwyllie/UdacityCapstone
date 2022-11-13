@@ -9,7 +9,7 @@ This is my Capstone project submission for the Udacity "Cloud DevOps Engineer" n
 For this final project on the course, it was left open-ended to allow me to make my own decisions.
 
 Tasks Completed:
-* Decided to create a Flask App to provide a Weather checking app
+* Decided to create a Flask App to provide a Weather checking app using https://openweathermap.org/api
 * Took some time to try and develop the app and get it running locally
 * Created the Makefile and Dockerfile
 * Created, tested and deployed docker image locally

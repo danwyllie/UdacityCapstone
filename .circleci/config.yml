@@ -372,8 +372,11 @@ jobs:
               eksctl version
             fi
       - run:
-          name: "Check for clustercleanup request"
+          name: "Cluster cleanup request"
           command: |
+            echo "== Pausing for 5 mins to allow for any last app checks =="
+            sleep 300
+            echo "== Checking clustercleanup.txt file =="
             export CLEANUPREQUESTED=$(cat clustercleanup.txt)
             echo "Value found:" ${CLEANUPREQUESTED}
             if [[ "$CLEANUPREQUESTED" == "yes" ]]
