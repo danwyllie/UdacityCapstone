@@ -328,50 +328,77 @@ jobs:
             echo "== Grabbing latest deployment =="
             export NEWDEPLOY=$(curl -s -k https://kvdb.io/TbCZ6YEAqpcuxmXp56GbjJ/newdeployment)
             echo "New deployment was:" ${NEWDEPLOY}
-            if [[ "$NEWDEPLOY" == green ]]
+            echo
+            export OLDBLUE=($(kubectl get deployments | grep udacitycapstone-blue | awk '{print $1}'))
+            export OLDGREEN=($(kubectl get deployments | grep udacitycapstone-green | awk '{print $1}'))
+            if [[ "$NEWDEPLOY" == green ]] && [[ -n "$OLDBLUE" ]]
             then
-             echo "======================================"
-             echo "== Checking for old blue deployment =="
-             export OLDBLUE=($(kubectl get deployments | grep udacitycapstone-blue | awk '{print $1}'))
-             echo "Blue found as:" ${OLDBLUE}
-             if [[ "$NEWDEPLOY" == green ]] && [[ -n "$OLDBLUE" ]]; then
-              echo "== Cleaning up old BLUE deployment =="
-              echo "== 1. Deleting old blue service... =="
-              kubectl delete -f eksyml/blue-service.yml
-              sleep 60
-              echo "== 2. Deleting old blue deployment =="
-              kubectl delete -f eksyml/blue-deploy.yml
-              sleep 60
-              echo "== Sanity checking current status =="
-              kubectl get deployments
-              kubectl get pods
-              kubectl get nodes
-              kubectl get services
-             else
-              echo "== No old BLUE found to cleanup =="
-             fi
-            elif [[ "$NEWDEPLOY" == blue ]]
+             echo "== Cleanup of old BLUE deployment required =="
+             echo "== Deleting old service / deployment now =="
+             kubectl delete -f eksyml/blue-service.yml
+             sleep 60
+             kubectl delete -f eksyml/blue-deploy.yml
+             sleep 60
+            elif [[ "$NEWDEPLOY" == blue ]] && [[ -n "$OLDGREEN" ]]
             then
-             echo "======================================"
-             echo "== Checking for old green deployment =="
-             export OLDGREEN=($(kubectl get deployments | grep udacitycapstone-green | awk '{print $1}'))
-             echo "Green found as:" ${OLDGREEN}
-             if [[ "$NEWDEPLOY" == green ]] && [[ -n "$OLDGREEN" ]]; then
-              echo "== Cleaning up old GREEN deployment =="
-              echo "== 1. Deleting old green service... =="
-              kubectl delete -f eksyml/green-service.yml
-              sleep 60
-              echo "== 2. Deleting old green deployment =="
-              kubectl delete -f eksyml/green-deploy.yml
-              sleep 60
-              echo "== Sanity checking current status =="
-              kubectl get deployments
-              kubectl get pods
-              kubectl get nodes
-              kubectl get services
-             else
-              echo "== No old BLUE found to cleanup =="
+             echo "== Cleanup of old GREEN deployment required =="
+             echo "== Deleting old service / deployment now =="
+             kubectl delete -f eksyml/green-service.yml
+             sleep 60
+             kubectl delete -f eksyml/green-deploy.yml
+             sleep 60
+            else
+             echo "== No old BLUE deployment found to cleanup =="
             fi
+            echo "== Sanity checking service / deployment =="
+            kubectl get deployments
+            kubectl get services
+            kubectl get pods
+            kubectl get nodes
+#            if [[ "$NEWDEPLOY" == green ]]
+#            then
+#             echo "======================================"
+#             echo "== Checking for old blue deployment =="
+#             export OLDBLUE=($(kubectl get deployments | grep udacitycapstone-blue | awk '{print $1}'))
+#             echo "Blue found as:" ${OLDBLUE}
+#             if [[ "$NEWDEPLOY" == green ]] && [[ -n "$OLDBLUE" ]]; then
+#              echo "== Cleaning up old BLUE deployment =="
+#              echo "== 1. Deleting old blue service... =="
+#              kubectl delete -f eksyml/blue-service.yml
+#              sleep 60
+#              echo "== 2. Deleting old blue deployment =="
+#              kubectl delete -f eksyml/blue-deploy.yml
+#              sleep 60
+#              echo "== Sanity checking current status =="
+#              kubectl get deployments
+#              kubectl get pods
+#              kubectl get nodes
+#              kubectl get services
+#             else
+#              echo "== No old BLUE found to cleanup =="
+#             fi
+#            elif [[ "$NEWDEPLOY" == blue ]]
+#            then
+#             echo "======================================"
+#             echo "== Checking for old green deployment =="
+#             export OLDGREEN=($(kubectl get deployments | grep udacitycapstone-green | awk '{print $1}'))
+#             echo "Green found as:" ${OLDGREEN}
+#             if [[ "$NEWDEPLOY" == green ]] && [[ -n "$OLDGREEN" ]]; then
+#              echo "== Cleaning up old GREEN deployment =="
+#              echo "== 1. Deleting old green service... =="
+#              kubectl delete -f eksyml/green-service.yml
+#              sleep 60
+#              echo "== 2. Deleting old green deployment =="
+#              kubectl delete -f eksyml/green-deploy.yml
+#              sleep 60
+#              echo "== Sanity checking current status =="
+#              kubectl get deployments
+#              kubectl get pods
+#              kubectl get nodes
+#              kubectl get services
+#             else
+#              echo "== No old BLUE found to cleanup =="
+#            fi
 
 workflows:
   default:
